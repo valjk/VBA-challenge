@@ -33,18 +33,4 @@ XLA recommended adding the "Ticker Check" code above the code I wrote for "Updat
                 totalVolumes(tickerCount) = totalVolume
                 tickerCount = tickerCount + 1
             End If
-
-            ' Update totals for summary
-            totalQuarterlyChange = totalQuarterlyChange + quarterlyChange
-            totalStockVolume = totalStockVolume + totalVolume
-            numEntries = numEntries + 1
-        Next i
-
-        ' Output results for each ticker
-        For j = 0 To tickerCount - 1
-            ws.Cells(outputRow, 9).Value = tickers(j)
-            ws.Cells(outputRow, 10).Value = quarterlyChanges(j)
-            ws.Cells(outputRow, 11).Value = percentageChanges(j)
-            ws.Cells(outputRow, 12).Value = totalVolumes(j)
-            outputRow = outputRow + 1
-        Next j
+    
