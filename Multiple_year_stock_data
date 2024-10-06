@@ -1,0 +1,123 @@
+Sub StockData()
+    Dim ws As Worksheet
+    Dim lastRow As Long
+    Dim i As Long
+    Dim j As Long
+    Dim ticker As String
+    Dim openingPrice As Double
+    Dim closingPrice As Double
+    Dim totalVolume As Double
+    Dim quarterlyChange As Double
+    Dim percentageChange As Double
+    Dim outputRow As Long
+    Dim totalQuarterlyChange As Double
+    Dim totalStockVolume As Double
+    Dim numEntries As Long
+    Dim summaryRow As Long
+    Dim tickerCount As Integer
+    Dim tickers() As String
+    Dim quarterlyChanges() As Double
+    Dim percentageChanges() As Double
+    Dim totalVolumes() As Double
+    Dim firstOpeningPrices() As Double
+
+    ' Worksheet Loop (Quarters)
+    For Each ws In ThisWorkbook.Worksheets
+        lastRow = ws.Cells(ws.Rows.Count, "A").End(xlUp).Row
+
+        ' Print Column Headers
+        ws.Cells(1, 9).Value = "Ticker"
+        ws.Cells(1, 10).Value = "Quarterly Change"
+        ws.Cells(1, 11).Value = "Percentage Change"
+        ws.Cells(1, 12).Value = "Total Stock Volume"
+
+        outputRow = 2
+        totalQuarterlyChange = 0
+        totalStockVolume = 0
+        numEntries = 0
+        tickerCount = 0
+
+        ' Initialize arrays
+        ReDim tickers(0)
+        ReDim quarterlyChanges(0)
+        ReDim percentageChanges(0)
+        ReDim totalVolumes(0)
+        ReDim firstOpeningPrices(0)
+
+        ' Stock entry loop
+        For i = 2 To lastRow
+            ticker = ws.Cells(i, 1).Value ' Ticker symbol in column A
+            openingPrice = ws.Cells(i, 3).Value ' Opening price in column C
+            closingPrice = ws.Cells(i, 6).Value ' Closing price in column F
+            totalVolume = ws.Cells(i, 7).Value ' Total volume in column G
+
+            ' Ticker Check
+            Dim found As Boolean
+            found = False
+
+            For j = 0 To tickerCount - 1
+                If tickers(j) = ticker Then
+                    quarterlyChanges(j) = closingPrice - firstOpeningPrices(j)
+                    If firstOpeningPrices(j) <> 0 Then
+                        percentageChanges(j) = (quarterlyChanges(j) / firstOpeningPrices(j)) * 100
+                    Else
+                        percentageChanges(j) = 0
+                    End If
+                    totalVolumes(j) = totalVolumes(j) + totalVolume
+                    found = True
+                    Exit For
+                End If
+            Next j
+
+            If Not found Then
+                ReDim Preserve tickers(tickerCount)
+                ReDim Preserve quarterlyChanges(tickerCount)
+                ReDim Preserve percentageChanges(tickerCount)
+                ReDim Preserve totalVolumes(tickerCount)
+                ReDim Preserve firstOpeningPrices(tickerCount)
+
+                tickers(tickerCount) = ticker
+                firstOpeningPrices(tickerCount) = openingPrice
+                quarterlyChanges(tickerCount) = 0
+                percentageChanges(tickerCount) = 0
+                totalVolumes(tickerCount) = totalVolume
+                tickerCount = tickerCount + 1
+            End If
+
+            ' Update totals for summary
+            totalQuarterlyChange = totalQuarterlyChange + quarterlyChange
+            totalStockVolume = totalStockVolume + totalVolume
+            numEntries = numEntries + 1
+        Next i
+
+        ' Output results for each ticker
+        For j = 0 To tickerCount - 1
+            ws.Cells(outputRow, 9).Value = tickers(j)
+            ws.Cells(outputRow, 10).Value = quarterlyChanges(j)
+            ws.Cells(outputRow, 11).Value = percentageChanges(j)
+            ws.Cells(outputRow, 12).Value = totalVolumes(j)
+            outputRow = outputRow + 1
+        Next j
+
+        ' Output summary results
+        summaryRow = outputRow + 2
+        ws.Cells(summaryRow, 9).Value = "Total Quarterly Change"
+        ws.Cells(summaryRow, 10).Value = totalQuarterlyChange
+        ws.Cells(summaryRow + 1, 9).Value = "Average Percentage Change"
+        If numEntries > 0 Then
+            ws.Cells(summaryRow + 1, 10).Value = totalQuarterlyChange / numEntries
+        Else
+            ws.Cells(summaryRow + 1, 10).Value = 0
+        End If
+        ws.Cells(summaryRow + 2, 9).Value = "Total Stock Volume"
+        ws.Cells(summaryRow + 2, 10).Value = totalStockVolume
+
+        ' Conditional formatting for positive (green) and negative (red) changes
+        With ws.Range(ws.Cells(2, 10), ws.Cells(outputRow - 1, 10)).FormatConditions.Add(Type:=xlCellValue, Operator:=xlGreater, Formula1:=0)
+            .Interior.Color = RGB(0, 255, 0)
+        End With
+        With ws.Range(ws.Cells(2, 10), ws.Cells(outputRow - 1, 10)).FormatConditions.Add(Type:=xlCellValue, Operator:=xlLess, Formula1:=0)
+            .Interior.Color = RGB(255, 0, 0)
+        End With
+    Next ws
+End Sub
