@@ -1,10 +1,7 @@
 Xpert Learning Assistant(XLA) - My initial code and output worked for each Ticker row, and I needed assistance with outputting the summary table.
 XLA recommended adding the "Ticker Check" code above the code I wrote for "Update totals for summary" and "Output results for each ticker", then it worked.
 
-  ' Ticker Check
-            Dim found As Boolean
-            found = False
-
+          'Ticker Check
             For j = 0 To tickerCount - 1
                 If tickers(j) = ticker Then
                     quarterlyChanges(j) = closingPrice - firstOpeningPrices(j)
